@@ -150,6 +150,27 @@ class MistralProfile(ProviderProfile):
     skip the parameter entirely, avoiding HTTP 400 from Mistral's API.
     """
 
+    # ── Reasoning-effort values the Mistral API accepts as of July 2026 ──
+    # ``mistral-medium-latest`` → high, none
+    # ``mistral-small-latest``  → high, none (via API)
+    # ``mistral-medium-3/x``    → high, none
+    # ``mistral-large-latest``  → low, medium, high (full spectrum — though
+    #                             large itself is non-reasoning; this covers
+    #                             any future large-26xx variant)
+    #
+    # Models that only accept ``high`` / ``none`` reject ``low`` and ``medium``
+    # with HTTP 400.  We clamp those up to ``high`` so the user's intent
+    # (reasoning at some level) is preserved.
+    _EFFORT_HIGH_NONE_ONLY = frozenset({
+        "mistral-medium-latest",
+        "mistral-medium",
+        "mistral-small-latest",
+        "mistral-small",
+        "mistral-medium-3",
+        "mistral-medium-3-5",
+        "mistral-medium-3.5",
+    })
+
     def build_api_kwargs_extras(
         self,
         *,
@@ -166,6 +187,10 @@ class MistralProfile(ProviderProfile):
         if isinstance(reasoning_config, dict):
             effort = (reasoning_config.get("effort") or "").strip().lower()
             if effort:
+                # Clamp low/medium → high for models that don't accept them.
+                m = (model or "").strip().lower()
+                if m in self._EFFORT_HIGH_NONE_ONLY and effort in ("low", "medium"):
+                    effort = "high"
                 top_level["reasoning_effort"] = effort
 
         return extra_body, top_level
