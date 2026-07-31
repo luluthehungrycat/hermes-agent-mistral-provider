@@ -177,6 +177,7 @@ class TestMistralProfileMetadata:
 
     def test_env_vars(self, mistral_profile):
         assert "MISTRAL_API_KEY" in mistral_profile.env_vars
+        assert "MISTRAL_BASE_URL" in mistral_profile.env_vars
 
     def test_base_url(self, mistral_profile):
         assert mistral_profile.base_url == "https://api.mistral.ai/v1"

@@ -199,7 +199,10 @@ class MistralProfile(ProviderProfile):
 mistral = MistralProfile(
     name="mistral",
     aliases=("mistral-ai", "mistralai"),
-    env_vars=("MISTRAL_API_KEY",),
+    # Hermes derives the API-key and optional endpoint-override variables from
+    # this declaration when it builds the ProviderConfig.  Keep the base URL
+    # variable after the key: the core filters *_BASE_URL out of key lookup.
+    env_vars=("MISTRAL_API_KEY", "MISTRAL_BASE_URL"),
     display_name="Mistral AI",
     description="Mistral AI — native Mistral API",
     signup_url="https://console.mistral.ai/",
