@@ -26,6 +26,13 @@ Set your Mistral API key in `~/.hermes/.env`:
 MISTRAL_API_KEY=your-key-here
 ```
 
+For an enterprise endpoint or a compatible proxy, optionally override the
+default `https://api.mistral.ai/v1` endpoint:
+
+```
+MISTRAL_BASE_URL=https://mistral.example.com/v1
+```
+
 Then run `hermes model` and select **Mistral AI** from the provider list.
 
 ## Supported Models
