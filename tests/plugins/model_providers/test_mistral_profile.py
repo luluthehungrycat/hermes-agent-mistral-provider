@@ -172,12 +172,31 @@ class TestMistralAuxModel:
 class TestMistralProfileMetadata:
     """Provider profile metadata is correct."""
 
+    def test_three_regional_profiles_are_registered(self, mistral_profile):
+        import providers
+
+        profiles = {p.name: p for p in providers.list_providers() if p.name.startswith("mistral-")}
+        assert set(profiles) == {"mistral-global", "mistral-eu", "mistral-us"}
+        assert profiles["mistral-global"].base_url == "https://api.mistral.ai/v1"
+        assert profiles["mistral-eu"].base_url == "https://api.eu.mistral.ai/v1"
+        assert profiles["mistral-us"].base_url == "https://api.us.mistral.ai/v1"
+        assert profiles["mistral-global"].description == "Mistral AI — Global endpoint — default, broadest model and feature coverage"
+        assert profiles["mistral-eu"].display_name == "Mistral AI (EU endpoint — +10% price)"
+        assert profiles["mistral-eu"].description == "Mistral AI — EU endpoint — +10% price; some models/features may be unavailable"
+        assert profiles["mistral-us"].display_name == "Mistral AI (US endpoint — +10% price)"
+        assert profiles["mistral-us"].description == "Mistral AI — US endpoint — +10% price; some models/features may be unavailable"
+
+    def test_legacy_mistral_alias_resolves_to_global(self, mistral_profile):
+        import providers
+
+        assert providers.get_provider_profile("mistral") is mistral_profile
+        assert providers.get_provider_profile("mistral-ai") is mistral_profile
+
     def test_display_name(self, mistral_profile):
-        assert mistral_profile.display_name == "Mistral AI"
+        assert mistral_profile.display_name == "Mistral AI (Global endpoint)"
 
     def test_env_vars(self, mistral_profile):
-        assert "MISTRAL_API_KEY" in mistral_profile.env_vars
-        assert "MISTRAL_BASE_URL" in mistral_profile.env_vars
+        assert mistral_profile.env_vars == ("MISTRAL_API_KEY",)
 
     def test_base_url(self, mistral_profile):
         assert mistral_profile.base_url == "https://api.mistral.ai/v1"
