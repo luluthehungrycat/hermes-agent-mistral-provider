@@ -51,8 +51,23 @@ Then run `hermes model` and select **Mistral AI** from the provider list.
 - Tool/function calling (tested on Small, Medium, Large, Codestral, Ministral)
 - Vision (base64 images)
 - `reasoning_effort` pass-through via **version-threshold gating** — future date-stamped models (e.g. `mistral-small-2703`) automatically supported, no code changes needed
-- 48 unit tests covering model gating, wire shape, metadata, and edge cases
+- 50 unit tests covering model gating, wire shape, metadata, regional profiles, and edge cases
 - Auto-registers with Hermes provider discovery — just set `MISTRAL_API_KEY`
+- Three independently selectable endpoint profiles: Global, EU, and US
+
+## Regional inference profiles
+
+The plugin adds three entries directly to Hermes' provider list:
+
+- **Mistral AI (Global endpoint)** — default behavior, broadest coverage
+- **Mistral AI (EU endpoint — +10% price)** — EU regional inference
+- **Mistral AI (US endpoint — +10% price)** — US regional inference
+
+All three profiles use the same `MISTRAL_API_KEY` and Mistral model logic. The
+EU and US profiles use fixed regional base URLs, so selecting one cannot
+silently fall back to Global. Regional endpoints have narrower feature/model
+coverage; unsupported workloads should be selected through the Global profile
+explicitly.
 
 ## Reasoning Gate Design
 

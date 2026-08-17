@@ -196,26 +196,65 @@ class MistralProfile(ProviderProfile):
         return extra_body, top_level
 
 
-mistral = MistralProfile(
-    name="mistral",
-    aliases=("mistral-ai", "mistralai"),
-    # Hermes derives the API-key and optional endpoint-override variables from
-    # this declaration when it builds the ProviderConfig.  Keep the base URL
-    # variable after the key: the core filters *_BASE_URL out of key lookup.
-    env_vars=("MISTRAL_API_KEY", "MISTRAL_BASE_URL"),
-    display_name="Mistral AI",
-    description="Mistral AI — native Mistral API",
-    signup_url="https://console.mistral.ai/",
-    fallback_models=(
-        "mistral-large-latest",
-        "mistral-medium-latest",
-        "mistral-small-latest",
-        "codestral-latest",
-        "pixtral-12b-latest",
-    ),
+def _make_mistral_profile(
+    *,
+    name: str,
+    display_name: str,
+    base_url: str,
+    description: str,
+    aliases: tuple[str, ...] = (),
+    allow_base_url_override: bool = False,
+) -> MistralProfile:
+    """Build one independently selectable Mistral regional profile."""
+    env_vars = ("MISTRAL_API_KEY",)
+    if allow_base_url_override:
+        # Preserve the documented enterprise/proxy override for the legacy
+        # global profile. Regional profiles must keep their endpoints fixed.
+        env_vars += ("MISTRAL_BASE_URL",)
+
+    return MistralProfile(
+        name=name,
+        aliases=aliases,
+        env_vars=env_vars,
+        display_name=display_name,
+        description=description,
+        signup_url="https://console.mistral.ai/",
+        fallback_models=(
+            "mistral-large-latest",
+            "mistral-medium-latest",
+            "mistral-small-latest",
+            "codestral-latest",
+            "pixtral-12b-latest",
+        ),
+        base_url=base_url,
+        supports_vision=True,
+        default_aux_model="mistral-small-latest",
+    )
+
+
+mistral_global = _make_mistral_profile(
+    name="mistral-global",
+    display_name="Mistral AI (Global endpoint)",
     base_url="https://api.mistral.ai/v1",
-    supports_vision=True,
-    default_aux_model="mistral-small-latest",
+    description="Mistral AI — Global endpoint — default, broadest model and feature coverage",
+    aliases=("mistral", "mistral-ai", "mistralai", "mistral-global-endpoint"),
+    allow_base_url_override=True,
+)
+mistral_eu = _make_mistral_profile(
+    name="mistral-eu",
+    display_name="Mistral AI (EU endpoint — +10% price)",
+    base_url="https://api.eu.mistral.ai/v1",
+    description="Mistral AI — EU endpoint — +10% price; some models/features may be unavailable",
+    aliases=("mistral-eu-endpoint",),
+)
+mistral_us = _make_mistral_profile(
+    name="mistral-us",
+    display_name="Mistral AI (US endpoint — +10% price)",
+    base_url="https://api.us.mistral.ai/v1",
+    description="Mistral AI — US endpoint — +10% price; some models/features may be unavailable",
+    aliases=("mistral-us-endpoint",),
 )
 
-register_provider(mistral)
+register_provider(mistral_global)
+register_provider(mistral_eu)
+register_provider(mistral_us)
