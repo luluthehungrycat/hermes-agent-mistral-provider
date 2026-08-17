@@ -208,7 +208,10 @@ def _make_mistral_profile(
     return MistralProfile(
         name=name,
         aliases=aliases,
-        env_vars=("MISTRAL_API_KEY",),
+        # Keep the enterprise/proxy endpoint override available for backwards
+        # compatibility. Hermes filters *_BASE_URL out of API-key lookup and
+        # applies it as the configured endpoint override.
+        env_vars=("MISTRAL_API_KEY", "MISTRAL_BASE_URL"),
         display_name=display_name,
         description=description,
         signup_url="https://console.mistral.ai/",
