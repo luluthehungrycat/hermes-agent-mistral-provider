@@ -203,15 +203,19 @@ def _make_mistral_profile(
     base_url: str,
     description: str,
     aliases: tuple[str, ...] = (),
+    allow_base_url_override: bool = False,
 ) -> MistralProfile:
     """Build one independently selectable Mistral regional profile."""
+    env_vars = ("MISTRAL_API_KEY",)
+    if allow_base_url_override:
+        # Preserve the documented enterprise/proxy override for the legacy
+        # global profile. Regional profiles must keep their endpoints fixed.
+        env_vars += ("MISTRAL_BASE_URL",)
+
     return MistralProfile(
         name=name,
         aliases=aliases,
-        # Keep the enterprise/proxy endpoint override available for backwards
-        # compatibility. Hermes filters *_BASE_URL out of API-key lookup and
-        # applies it as the configured endpoint override.
-        env_vars=("MISTRAL_API_KEY", "MISTRAL_BASE_URL"),
+        env_vars=env_vars,
         display_name=display_name,
         description=description,
         signup_url="https://console.mistral.ai/",
@@ -234,6 +238,7 @@ mistral_global = _make_mistral_profile(
     base_url="https://api.mistral.ai/v1",
     description="Mistral AI — Global endpoint — default, broadest model and feature coverage",
     aliases=("mistral", "mistral-ai", "mistralai", "mistral-global-endpoint"),
+    allow_base_url_override=True,
 )
 mistral_eu = _make_mistral_profile(
     name="mistral-eu",

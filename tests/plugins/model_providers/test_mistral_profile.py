@@ -185,6 +185,9 @@ class TestMistralProfileMetadata:
         assert profiles["mistral-eu"].description == "Mistral AI — EU endpoint — +10% price; some models/features may be unavailable"
         assert profiles["mistral-us"].display_name == "Mistral AI (US endpoint — +10% price)"
         assert profiles["mistral-us"].description == "Mistral AI — US endpoint — +10% price; some models/features may be unavailable"
+        assert profiles["mistral-global"].env_vars == ("MISTRAL_API_KEY", "MISTRAL_BASE_URL")
+        assert profiles["mistral-eu"].env_vars == ("MISTRAL_API_KEY",)
+        assert profiles["mistral-us"].env_vars == ("MISTRAL_API_KEY",)
 
     def test_legacy_mistral_alias_resolves_to_global(self, mistral_profile):
         import providers
