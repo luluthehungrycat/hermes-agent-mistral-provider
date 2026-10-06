@@ -76,6 +76,8 @@ def _model_supports_reasoning(model: str | None) -> bool:
     _ALWAYS_REASONING = frozenset({
         # Experimental / labs
         "labs-leanstral-1-5", "labs-leanstral-1-5-1",
+        # GLM-5.3 hosted unmodified by Mistral; pass configured effort through.
+        "zai-glm-5-3",
         # Generic latest aliases
         "mistral-small-latest",
         "mistral-medium", "mistral-medium-latest",
@@ -225,6 +227,8 @@ def _make_mistral_profile(
             "mistral-small-latest",
             "codestral-latest",
             "pixtral-12b-latest",
+            "zai-glm-5-3",
+            "mistral-large-4",
         ),
         base_url=base_url,
         supports_vision=True,

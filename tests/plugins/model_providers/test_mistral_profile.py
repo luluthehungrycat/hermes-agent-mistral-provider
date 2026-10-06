@@ -95,6 +95,7 @@ class TestMistralModelGating:
             "mistral-small-2603",
             "mistral-small-2603-beta",
             "mistral-medium-latest",
+            "zai-glm-5-3",
             "mistral-medium",
             "mistral-medium-2604",
             "mistral-medium-3-5",
@@ -139,6 +140,7 @@ class TestMistralModelGating:
             "mistral-medium-2505",  # old non-thinking medium variant
             "mistral-medium-2508",  # old non-thinking medium variant
             "mistral-large-2599",   # pre-reasoning threshold (if ever added)
+            "mistral-large-4",       # Large 4 is not documented as reasoning-enabled
             "",                       # bare/unknown
             None,                     # missing
             "mistral-unknown",       # unrecognized
@@ -156,6 +158,22 @@ class TestMistralAuxModel:
     """Mistral aux model is set on the profile so users don't see the
     bogus 'No auxiliary LLM provider configured' warning (#26924).
     """
+
+    def test_profile_advertises_model_fallbacks(self, mistral_profile):
+        assert "zai-glm-5-3" in mistral_profile.fallback_models
+        assert "mistral-large-4" in mistral_profile.fallback_models
+
+    def test_glm_configured_reasoning_effort_passes_through(self, mistral_profile):
+        _, top_level = mistral_profile.build_api_kwargs_extras(
+            reasoning_config={"effort": "high"}, model="zai-glm-5-3"
+        )
+        assert top_level == {"reasoning_effort": "high"}
+
+    def test_large_4_does_not_get_reasoning_effort(self, mistral_profile):
+        _, top_level = mistral_profile.build_api_kwargs_extras(
+            reasoning_config={"effort": "high"}, model="mistral-large-4"
+        )
+        assert top_level == {}
 
     def test_profile_advertises_mistral_small(self, mistral_profile):
         assert mistral_profile.default_aux_model == "mistral-small-latest"

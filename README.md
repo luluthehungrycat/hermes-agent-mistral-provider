@@ -123,13 +123,19 @@ AI**.
 - `mistral-small-latest` — tool calling, vision, and reasoning
 - `codestral-latest` — tool calling
 - `pixtral-12b-latest` — tool calling and vision
+- `zai-glm-5-3` — Mistral-hosted GLM-5.3; tool calling and configured reasoning effort
+- `mistral-large-4` — tool calling, 1M context, public preview; reasoning support not established
+
+Model details: [GLM-5.3](https://docs.mistral.ai/models/zai-glm-5-3) and [Mistral Large 4](https://docs.mistral.ai/models/mistral-large-4-0).
 
 ## Features
 
 - Standard OpenAI-compatible chat completions
 - Tool/function calling
 - Vision through base64 images
-- `reasoning_effort` pass-through with version-threshold gating
+- `reasoning_effort` pass-through with version-threshold gating; GLM-5.3's configured effort is also passed through
+- Mistral-hosted GLM-5.3 and Large 4 model IDs listed in fallback catalog (1M context; Large 4 public preview)
+- Sources: [GLM-5.3](https://docs.mistral.ai/models/zai-glm-5-3), [Mistral Large 4](https://docs.mistral.ai/models/mistral-large-4-0), [Chat Completions API schema](https://docs.mistral.ai/api/#tag/chat/operation/chat_completion_v1_chat_completions_post)
 - Three independently selectable endpoint profiles: Global, EU, and US
 - Global endpoint override through `MISTRAL_BASE_URL`
 - Fixed EU and US regional endpoints that do not accept the generic override
