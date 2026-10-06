@@ -163,11 +163,28 @@ class TestMistralAuxModel:
         assert "zai-glm-5-3" in mistral_profile.fallback_models
         assert "mistral-large-4" in mistral_profile.fallback_models
 
-    def test_glm_configured_reasoning_effort_passes_through(self, mistral_profile):
+    @pytest.mark.parametrize(
+        ("configured", "expected"),
+        [("none", "low"), ("low", "low"), ("medium", "low"),
+         ("high", "high"), ("max", "max")],
+    )
+    def test_glm_effort_maps_to_supported_values(self, mistral_profile, configured, expected):
         _, top_level = mistral_profile.build_api_kwargs_extras(
-            reasoning_config={"effort": "high"}, model="zai-glm-5-3"
+            reasoning_config={"effort": configured}, model="zai-glm-5-3"
         )
-        assert top_level == {"reasoning_effort": "high"}
+        assert top_level == {"reasoning_effort": expected}
+
+    def test_glm_unknown_effort_safely_maps_to_low(self, mistral_profile):
+        _, top_level = mistral_profile.build_api_kwargs_extras(
+            reasoning_config={"effort": "garbage"}, model="zai-glm-5-3"
+        )
+        assert top_level == {"reasoning_effort": "low"}
+
+    def test_other_models_keep_existing_effort_behavior(self, mistral_profile):
+        _, top_level = mistral_profile.build_api_kwargs_extras(
+            reasoning_config={"effort": "garbage"}, model="mistral-small-latest"
+        )
+        assert top_level == {"reasoning_effort": "garbage"}
 
     def test_large_4_does_not_get_reasoning_effort(self, mistral_profile):
         _, top_level = mistral_profile.build_api_kwargs_extras(

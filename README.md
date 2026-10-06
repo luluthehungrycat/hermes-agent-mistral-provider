@@ -123,10 +123,10 @@ AI**.
 - `mistral-small-latest` — tool calling, vision, and reasoning
 - `codestral-latest` — tool calling
 - `pixtral-12b-latest` — tool calling and vision
-- `zai-glm-5-3` — Mistral-hosted GLM-5.3; tool calling and configured reasoning effort
+- `zai-glm-5-3` — Mistral-hosted GLM-5.3; tool calling and configured reasoning effort (`none`/`low`/`medium` map to `low`; `high` and `max` are preserved; unknown values default to `low`)
 - `mistral-large-4` — tool calling, 1M context, public preview; reasoning support not established
 
-Model details: [GLM-5.3](https://docs.mistral.ai/models/zai-glm-5-3) and [Mistral Large 4](https://docs.mistral.ai/models/mistral-large-4-0).
+Model details: [GLM-5.3](https://docs.mistral.ai/models/zai-glm-5-3), [Mistral reasoning values](https://docs.mistral.ai/studio/conversations/reasoning) (GLM accepts only `low`, `high`, and `max`), and [Mistral Large 4](https://docs.mistral.ai/models/mistral-large-4-0).
 
 ## Features
 

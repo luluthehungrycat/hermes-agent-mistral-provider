@@ -189,9 +189,19 @@ class MistralProfile(ProviderProfile):
         if isinstance(reasoning_config, dict):
             effort = (reasoning_config.get("effort") or "").strip().lower()
             if effort:
-                # Clamp low/medium → high for models that don't accept them.
                 m = (model or "").strip().lower()
-                if m in self._EFFORT_HIGH_NONE_ONLY and effort in ("low", "medium"):
+                if m == "zai-glm-5-3":
+                    # GLM accepts only low/high/max. Map Hermes none/low/medium
+                    # to low; preserve high/max; unknown values safely default low.
+                    effort = {
+                        "none": "low",
+                        "low": "low",
+                        "medium": "low",
+                        "high": "high",
+                        "max": "max",
+                    }.get(effort, "low")
+                # Clamp low/medium → high for other models that don't accept them.
+                elif m in self._EFFORT_HIGH_NONE_ONLY and effort in ("low", "medium"):
                     effort = "high"
                 top_level["reasoning_effort"] = effort
 
