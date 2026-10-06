@@ -163,6 +163,24 @@ class TestMistralAuxModel:
         assert "zai-glm-5-3" in mistral_profile.fallback_models
         assert "mistral-large-4" in mistral_profile.fallback_models
 
+    def test_large_4_capabilities_are_declared_exactly(self, mistral_profile):
+        assert mistral_profile.model_capabilities["mistral-large-4"] == {
+            "supports_tools": True,
+            "supports_vision": True,
+            "context_window": 1_000_000,
+        }
+
+    def test_regional_profiles_preserve_large_4_capabilities(self, mistral_profile):
+        import providers
+
+        for name in ("mistral-global", "mistral-eu", "mistral-us"):
+            profile = providers.get_provider_profile(name)
+            assert profile.model_capabilities["mistral-large-4"] == {
+                "supports_tools": True,
+                "supports_vision": True,
+                "context_window": 1_000_000,
+            }
+
     @pytest.mark.parametrize(
         ("configured", "expected"),
         [("none", "low"), ("low", "low"), ("medium", "low"),

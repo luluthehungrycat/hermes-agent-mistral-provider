@@ -243,6 +243,13 @@ def _make_mistral_profile(
         base_url=base_url,
         supports_vision=True,
         default_aux_model="mistral-small-latest",
+        model_capabilities={
+            "mistral-large-4": {
+                "supports_tools": True,
+                "supports_vision": True,
+                "context_window": 1_000_000,
+            },
+        },
     )
 
 
