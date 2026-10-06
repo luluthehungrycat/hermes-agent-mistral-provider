@@ -76,7 +76,7 @@ def _model_supports_reasoning(model: str | None) -> bool:
     _ALWAYS_REASONING = frozenset({
         # Experimental / labs
         "labs-leanstral-1-5", "labs-leanstral-1-5-1",
-        # GLM-5.3 hosted unmodified by Mistral; pass configured effort through.
+        # GLM-5.3 is hosted unmodified by Mistral and supports adjustable reasoning.
         "zai-glm-5-3",
         # Generic latest aliases
         "mistral-small-latest",

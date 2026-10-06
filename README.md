@@ -133,7 +133,7 @@ Model details: [GLM-5.3](https://docs.mistral.ai/models/zai-glm-5-3), [Mistral r
 - Standard OpenAI-compatible chat completions
 - Tool/function calling
 - Vision through base64 images
-- `reasoning_effort` pass-through with version-threshold gating; GLM-5.3's configured effort is also passed through
+- `reasoning_effort` pass-through with version-threshold gating; GLM-5.3's configured effort is mapped to its supported levels
 - Mistral-hosted GLM-5.3 and Large 4 model IDs listed in fallback catalog (1M context; Large 4 public preview)
 - Sources: [GLM-5.3](https://docs.mistral.ai/models/zai-glm-5-3), [Mistral Large 4](https://docs.mistral.ai/models/mistral-large-4-0), [Chat Completions API schema](https://docs.mistral.ai/api/#tag/chat/operation/chat_completion_v1_chat_completions_post)
 - Three independently selectable endpoint profiles: Global, EU, and US
