@@ -95,6 +95,7 @@ class TestMistralModelGating:
             "mistral-small-2603",
             "mistral-small-2603-beta",
             "mistral-medium-latest",
+            "zai-glm-5-3",
             "mistral-medium",
             "mistral-medium-2604",
             "mistral-medium-3-5",
@@ -139,6 +140,7 @@ class TestMistralModelGating:
             "mistral-medium-2505",  # old non-thinking medium variant
             "mistral-medium-2508",  # old non-thinking medium variant
             "mistral-large-2599",   # pre-reasoning threshold (if ever added)
+            "mistral-large-4",       # Large 4 is not documented as reasoning-enabled
             "",                       # bare/unknown
             None,                     # missing
             "mistral-unknown",       # unrecognized
@@ -156,6 +158,57 @@ class TestMistralAuxModel:
     """Mistral aux model is set on the profile so users don't see the
     bogus 'No auxiliary LLM provider configured' warning (#26924).
     """
+
+    def test_profile_advertises_model_fallbacks(self, mistral_profile):
+        assert "zai-glm-5-3" in mistral_profile.fallback_models
+        assert "mistral-large-4" in mistral_profile.fallback_models
+
+    def test_large_4_capabilities_are_declared_exactly(self, mistral_profile):
+        assert mistral_profile.model_capabilities["mistral-large-4"] == {
+            "supports_tools": True,
+            "supports_vision": True,
+            "context_window": 1_000_000,
+        }
+
+    def test_regional_profiles_preserve_large_4_capabilities(self, mistral_profile):
+        import providers
+
+        for name in ("mistral-global", "mistral-eu", "mistral-us"):
+            profile = providers.get_provider_profile(name)
+            assert profile.model_capabilities["mistral-large-4"] == {
+                "supports_tools": True,
+                "supports_vision": True,
+                "context_window": 1_000_000,
+            }
+
+    @pytest.mark.parametrize(
+        ("configured", "expected"),
+        [("none", "low"), ("low", "low"), ("medium", "low"),
+         ("high", "high"), ("max", "max")],
+    )
+    def test_glm_effort_maps_to_supported_values(self, mistral_profile, configured, expected):
+        _, top_level = mistral_profile.build_api_kwargs_extras(
+            reasoning_config={"effort": configured}, model="zai-glm-5-3"
+        )
+        assert top_level == {"reasoning_effort": expected}
+
+    def test_glm_unknown_effort_safely_maps_to_low(self, mistral_profile):
+        _, top_level = mistral_profile.build_api_kwargs_extras(
+            reasoning_config={"effort": "garbage"}, model="zai-glm-5-3"
+        )
+        assert top_level == {"reasoning_effort": "low"}
+
+    def test_other_models_keep_existing_effort_behavior(self, mistral_profile):
+        _, top_level = mistral_profile.build_api_kwargs_extras(
+            reasoning_config={"effort": "garbage"}, model="mistral-small-latest"
+        )
+        assert top_level == {"reasoning_effort": "garbage"}
+
+    def test_large_4_does_not_get_reasoning_effort(self, mistral_profile):
+        _, top_level = mistral_profile.build_api_kwargs_extras(
+            reasoning_config={"effort": "high"}, model="mistral-large-4"
+        )
+        assert top_level == {}
 
     def test_profile_advertises_mistral_small(self, mistral_profile):
         assert mistral_profile.default_aux_model == "mistral-small-latest"

@@ -76,6 +76,8 @@ def _model_supports_reasoning(model: str | None) -> bool:
     _ALWAYS_REASONING = frozenset({
         # Experimental / labs
         "labs-leanstral-1-5", "labs-leanstral-1-5-1",
+        # GLM-5.3 is hosted unmodified by Mistral and supports adjustable reasoning.
+        "zai-glm-5-3",
         # Generic latest aliases
         "mistral-small-latest",
         "mistral-medium", "mistral-medium-latest",
@@ -187,9 +189,19 @@ class MistralProfile(ProviderProfile):
         if isinstance(reasoning_config, dict):
             effort = (reasoning_config.get("effort") or "").strip().lower()
             if effort:
-                # Clamp low/medium → high for models that don't accept them.
                 m = (model or "").strip().lower()
-                if m in self._EFFORT_HIGH_NONE_ONLY and effort in ("low", "medium"):
+                if m == "zai-glm-5-3":
+                    # GLM accepts only low/high/max. Map Hermes none/low/medium
+                    # to low; preserve high/max; unknown values safely default low.
+                    effort = {
+                        "none": "low",
+                        "low": "low",
+                        "medium": "low",
+                        "high": "high",
+                        "max": "max",
+                    }.get(effort, "low")
+                # Clamp low/medium → high for other models that don't accept them.
+                elif m in self._EFFORT_HIGH_NONE_ONLY and effort in ("low", "medium"):
                     effort = "high"
                 top_level["reasoning_effort"] = effort
 
@@ -225,10 +237,19 @@ def _make_mistral_profile(
             "mistral-small-latest",
             "codestral-latest",
             "pixtral-12b-latest",
+            "zai-glm-5-3",
+            "mistral-large-4",
         ),
         base_url=base_url,
         supports_vision=True,
         default_aux_model="mistral-small-latest",
+        model_capabilities={
+            "mistral-large-4": {
+                "supports_tools": True,
+                "supports_vision": True,
+                "context_window": 1_000_000,
+            },
+        },
     )
 
 

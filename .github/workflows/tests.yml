@@ -1,0 +1,70 @@
+name: Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mistral-provider-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  provider-tests:
+    name: Provider tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out plugin
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check out Hermes Agent runtime
+        uses: actions/checkout@v4
+        with:
+          repository: NousResearch/hermes-agent
+          ref: main
+          path: hermes-agent
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: hermes-agent/uv.lock
+
+      - name: Install Hermes test dependencies
+        run: uv sync --locked --group dev --no-install-project
+        working-directory: hermes-agent
+
+      - name: Install the plugin into an isolated Hermes home
+        run: |
+          set -euo pipefail
+          plugin_dir="${RUNNER_TEMP}/hermes-home/plugins/model-providers/mistral"
+          mkdir -p "$plugin_dir"
+          cp __init__.py plugin.yaml "$plugin_dir/"
+
+      - name: Run provider tests
+        run: uv run --project hermes-agent --no-sync python -m pytest tests/plugins/model_providers/test_mistral_profile.py -q
+        env:
+          HERMES_HOME: ${{ runner.temp }}/hermes-home
+          PYTHONPATH: ${{ github.workspace }}/hermes-agent
+
+      - name: Check Python syntax and patch whitespace
+        run: |
+          python -m py_compile __init__.py
+          if [[ -n "${BASE_SHA:-}" ]]; then
+            git diff --check "${BASE_SHA}...HEAD"
+          else
+            git show --check --format=oneline HEAD
+          fi
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
